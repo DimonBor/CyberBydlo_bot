@@ -7,7 +7,6 @@ import schedule
 import sms_module
 import call_module
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.utils.emoji import emojize
 from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineKeyboardButton, InlineKeyboardMarkup
 
 API_TOKEN = os.getenv('API_TOKEN')
@@ -15,15 +14,13 @@ API_TOKEN = os.getenv('API_TOKEN')
 CHAT_IDs = [-1001420903302, 551675002]
 
 commands = {
-    'Приветствие': {'\!привет', '\!Привет'},
+    'Привітання': {'\!привет', '\!Привет', '\!привіт', '\!Привіт'},
     'Хуета': {'\!хуета', '\!Хуета', 'Хуета', 'хуета', 'ясно', 'Ясно', 'хуита'},
     'ММММ': {'ммм','мммм','ммммм', 'Ммм','Мммм','Мммм' 'Ммммм','МММ','МММММ','ММММ', 'мммммм','ммммммм','Ммммммм'},
-    'ХОЙ': {'Хой','ХОЙ','хой', 'панки', 'Панки', 'ПАНКИ'},
     'СОСАТЬ': {
         '!\ИН', '!\ин', '\!ІН', '\!ін', 'ИН', 'Ин', 'ин', 'ІН', 'ін', 'ИН\-01', 'ин\-01', 'СНАУ', 'Снау', 'снау',
-        'Коваль', 'коваль', 'КОВАЛЬ'
     },
-    'Пары': {'\!Пары', '\!пары'},
+    'Пары': {'\!Пары', '\!пары', '\!пари', '\!Пари'},
     'Буль': {'!Буль','\!буль'},
     'Шиза': {'\!Шиза', '\!шиза', '\!Диньдон', '\!диньдон'},
     'Завтра': {'завтра', 'Завтра'},
@@ -52,17 +49,21 @@ async def help_command(message: types.Message):
 
     if message.chat.id in CHAT_IDs:
         await message.answer(
-            "<b>Справка по командам</b>\n\n"
-            "1. <i>!пары [аргумент]</i> - расписание на указаную дату. Можно использовать"
-            " <i>завтра</i> или дату в формате 'dd.mm.yyyy'. Пустой аргумент вернет расписание на сегодня.\n"
-            "2. <i>/me</i> - привет из сампа. У нас RP сервер.\n"
-            "3. <i>/help</i> - вызывает это сообщение.\n"
-            "4. <i>/set_group [название группы]</i> - установаить группу.\n"
-            "-----------\n"
-            "Для админов:\n"
-            "/add_url [имя_группы]|[имя_предмета_в_расписании]|[action(лаба/лекция)]|[ссылка] - добавляет ссылку на пару.\n"
-            "/delete_url [имя_группы]|[имя_предмета_в_расписании]|[action(лаба/лекция)] - удаляет ссылку на пару.\n"+
-            str(emojize("\n P.S. Всё остальное не допилено в силу моей лени :sweat_smile:"))
+            "<b>Справка по командах</b>\n\n" +
+            "1. <i>!пари [аргумент]</i> - розклад на вкану дату. Можна використовувати" + 
+            " <i>завтра</i> або дату в форматі 'dd.mm.yyyy'. Пустий аргумент поверне розклад на сьогодні.\n" +
+            "2. <i>/me</i> - У нас RP сервер.\n" + 
+            "3. <i>/help</i> - викликає це повідомлення.\n" + 
+            "4. <i>/set_group [назва групи]</i> - встановити групу.\n" + 
+            "-----------\n" + 
+            "Для мене справка, бо забуваю як воно працює:\n" + 
+            "/add_user [ID] [назва групи] - додати або перезаписати користувача.\n" +
+            "/get_users - отримати список усіх користувачів.\n" + 
+            "/get_id - отримати ID юзера.\n" + 
+            "/add_url [назва групи]|[назва предмету в розкладі]|[action(лаба/лекція)]|[посилання] - додає посилання на пару.\n" +
+            "/delete_url [назва групи]|[назва предмету в розкладі]|[action(лаба/лекція)]|[посилання] - видаляє посилання на пару.\n" +
+            "/get_urls - повернути JSON з посиланнями.\n" + 
+            "\n P.S. Все що недопилене, таким і залишиться в пам'ятник тому, яку діч я ліпив на першому курсі. ☺️"
         )
 
 
@@ -74,19 +75,19 @@ async def set_group(message: types.Message):
         message_array = list(map(str, message_str.split()))
         try: group_name = message_array[1]
         except:
-            await message.reply("Укажите название группы!")
+            await message.reply("Вкажіть назву групи!")
             return 0
 
         group_name = group_name[:2]+group_name[3:]
 
         if group_name not in schedule.groups:
-            await message.reply("Укажите название группы!")
+            await message.reply("Вкажіть назву групи!")
             return 0
 
         if setup.setGroup(message.from_user.id, group_name) == "OK":
-             await message.reply(f"Группа <b>{group_name}</b> успешно установлена")
+             await message.reply(f"Група <b>{group_name}</b> успішно встановлена.")
         else:
-            await message.reply("Похоже, что я вас почему-то не знаю. @Dimon_Bor, быдло, иди сюда.")
+            await message.reply("Схоже, що я вас чомусь не знаю.")
 
 
 @dp.message_handler(commands=['add_user'])
@@ -97,19 +98,19 @@ async def add_user(message: types.Message):
         message_array = list(map(str, message_str.split()))
         try: user_id = message_array[1]
         except:
-            await message.reply("Пиши нормально, быдло.")
+            await message.reply("Пиши нормально, бидло.")
             return 0
         try: group_name = message_array[2]
         except:
-            await message.reply("Пиши нормально, быдло.")
+            await message.reply("Пиши нормально, бидло.")
             return 0
 
         group_name = group_name[:2]+group_name[3:]
 
         if setup.addUser(user_id, group_name) == "OK":
-             await message.reply(f"Юзер <b>{user_id} | {group_name}</b> успешно добавлен")
+             await message.reply(f"Юзер <b>{user_id} | {group_name}</b> доданий успішно")
         else:
-            await message.reply("Он уже есть там, дебил")
+            await message.reply("Він там уже є, бидло!")
 
 
 @dp.message_handler(commands=['get_users'])
@@ -194,77 +195,73 @@ async def reply(message: types.Message):
             group_name = user[1]
     if not found:
         setup.addUser(user_id, "")
-        await message.reply("Похоже, что вы новый пользователь. Я запомнил вас, но что-бы смотреть расписание установите группу с помощью /set_group [название].")
-
+   
     if command in commands['Хуета']:
         if command == "ясно" or command == "Ясно":
-            if arg == "хуита" or arg == "хуета":
-                await message.reply("И не говори")
+            if arg == "хуита" or arg == "хуета" or arg == "хуіта":
+                await message.reply("І не кажи")
 
-        else: await message.reply("И не говори")
+        else: await message.reply("І не кажи")
 
-    elif command in commands['Приветствие']:
-        await message.reply("Привет, я КиберБыдло бот!")
+    elif command in commands['Привітання']:
+        await message.reply("Привіт, я КіберБидло бот!")
 
     elif command in commands['Пары']:
         if group_name in schedule.groups:
             await schedule.schedule_func(arg, kwarg, group_name, commands, message)
-        else: await message.reply("Установите группу!")
+        else: await message.reply("Встановіть групу!")
     elif command in commands['Буль']:
-        await message.reply(emojize("Буль, буль, буль....:new_moon_with_face:"))
+        await message.reply("Буль, буль, буль....🌚")
         sms_module.sms_service(arg)
 
     elif command in commands['Шиза']:
-        await message.reply(emojize("Динь-дон....:new_moon_with_face:"))
+        await message.reply("Динь-дон....🌚")
         call_module.call_service(arg)
 
     elif command in commands['СОСАТЬ']:
         if len(message_array) == 1: await message.reply("СОСАТЬ!")
 
-    elif command in commands['ХОЙ']:
-        await message.reply("ХОООООЙ!")
-
     elif command in commands['ММММ'] and not arg:
-        await message.reply("Хуета")
+        await message.reply("Хуіта")
 
     else:
         random_number = random.randint(0, 300)
         if random_number == 100:
-            await message.reply(emojize("Ты знал, что ты дурачёк?:see_no_evil:"))
+            await message.reply("Дурка по тобі плаче 🙈")
         elif random_number == 200:
-            await message.reply(emojize("Когда плац подметать?:new_moon_with_face:"))
+            await message.reply("Коли плац замітати? 🌚")
 
 
 @dp.message_handler()
 async def spam(message: types.Message):
-    await message.reply("ПАНКИ ХОЙ, ПОПСУ ДОЛОЙ!")
+    await message.reply("Киш, атсюдава!")
 
 
 @dp.inline_handler()
 async def inline_echo(inline_query: InlineQuery):
     random_number = random.randint(0, 100)
-    text = emojize(str(f':new_moon_with_face:{inline_query.from_user.first_name} быдло на {random_number}%:new_moon_with_face:'))
+    text = f'🌚 {inline_query.from_user.first_name} бидло на {random_number}% 🌚'
     text_1 = f'<b><i>* {inline_query.from_user.first_name} {inline_query.query}</i></b>'
     result_id: str = hashlib.md5(text.encode()).hexdigest()
 
-    bot_button = InlineKeyboardButton('БыдлоБот', switch_inline_query_current_chat='')
+    bot_button = InlineKeyboardButton('БидлоБот', switch_inline_query_current_chat='')
     bot_keyboard = InlineKeyboardMarkup().add(bot_button)
 
     item_1 = InlineQueryResultArticle(
         id=1,
-        title='Памагити(HELP)',
-        input_message_content=InputTextMessageContent(emojize(
-            "Это инлайн версия @CyberBydlo_bot. Пока вы можете читать это и "
-            "радоваться тому, какое вы быдло.\n"
-            "Чат-версия бота недоступна простым смертным, а только истинному КиберБыдлу.\n\n"
-            "Пы.Сы. Можете ему написать в лс, но ничего интересного там нет.:japanese_goblin:"
-        )),
+        title='Памагіті(HELP)',
+        input_message_content=InputTextMessageContent(
+            "Це інлайн функціонал @CyberBydlo_bot. Поки ви можете тільки це читати та "
+            "радіти тому, яке ви бидло.\n"
+            "Чат-версія недоступна простим смертним, а тільки істинному КіберБидлу.\n\n"
+            "P.S. Можете йому написати в лс, але нічого цікавого там немає.👺"
+        ),
         reply_markup=bot_keyboard,
         thumb_url='https://img.flaticon.com/icons/png/512/682/682055.png?size=1200x630f&pad=10,10,10,10&ext=png&bg=FFFFFFFF'
     )
     item_2 = InlineQueryResultArticle(
         id=2,
-        title=emojize('На сколько ты быдло:new_moon_with_face:'),
+        title='На скільки ти бидло 🌚',
         input_message_content=InputTextMessageContent(text),
         reply_markup=bot_keyboard,
         thumb_url='https://i.pinimg.com/originals/72/dc/f7/72dcf7e6266ba591e2ed103170bbfa30.jpg'

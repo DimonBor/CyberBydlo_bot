@@ -4,7 +4,6 @@ import json
 import setup
 import urllib3
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.utils.emoji import emojize
 from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineKeyboardButton, InlineKeyboardMarkup\
 
 
@@ -17,13 +16,13 @@ groups = {
 }
 
 weekdays = {
-    0: "Понедельник",
-    1: "Вторник",
-    2: "Среда",
-    3: "Четверг",
-    4: "Пятница",
-    5: "Суббота ",
-    6: "Воскресенье",
+    0: "Понеділок",
+    1: "Вівторок",
+    2: "Середа",
+    3: "Четвер",
+    4: "П'ятниця",
+    5: "Субота ",
+    6: "Неділя",
 }
 
 
@@ -49,13 +48,11 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
                 date_r = date_array[2]+"."+date_array[1]+"."+date_array[0]
 
             except ValueError:
-                output = emojize("Пиши нормально, шизик. :new_moon_with_face::ambulance:")
-                await message.reply(output)
+                await message.reply("Пиши нормально, шизік. 🌚🚑")
                 return 0
 
     elif kwarg:
-        output = emojize("Пиши нормально, шизик. :new_moon_with_face::ambulance:")
-        await message.reply(output)
+        await message.reply("Пиши нормально, шизік. 🌚🚑")
         return 0
 
     else:
@@ -66,7 +63,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
     group_code = groups[group_name]
 
     if not group_code:
-        output = str(emojize("Вашей группы нет, лмао:smile:"))
+        output = "Вашої групи немає, лмао😄"
         await message.reply(output)
         return 0
 
@@ -79,7 +76,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
     try:
         response = requests.post('https://schedule.sumdu.edu.ua/index/json', data=Data, verify=False, timeout=10)
     except:
-        await message.reply(str(emojize("Расписанию пизда, я не знаю, шо делать. :new_moon_with_face:")))
+        await message.reply("Розкладу пизда, я не знаю, шо робити. 🌚")
         return 0
 
     schedule_json = json.loads(response.text)
@@ -87,7 +84,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
     message_keyboard = InlineKeyboardMarkup()
 
     if not len(schedule_json):
-        output = str(emojize("Похоже, что пар нет :innocent:"))
+        output = "Схоже, що пар немає 😇"
         await message.reply(output)
         return 0
 
@@ -102,7 +99,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
                 else: message_keyboard.insert(temp_button)
         except: pass
 
-        temp_string = f"<i>{str(emojize(':watch:'))}{i['TIME_PAIR']} (<b>{action}</b>)</i>"
+        temp_string = f"<i>⌚️ {i['TIME_PAIR']} (<b>{action}</b>)</i>"
 
         if i['NAME_AUD']: temp_string += f" <b>[{i['NAME_AUD']}]</b>\n"
         else: temp_string += "\n"
@@ -112,7 +109,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
 
         output = temp_string + "---------------------------------------------\n" + output
 
-    output = (f"{str(emojize(':date:'))} <b>{date_r}</b> | <i>{weekdays[datetime.datetime.weekday(date_input)]}</i> | <i><b>{schedule_json[0]['NAME_GROUP']}</b></i>"
+    output = (f"📅 <b>{date_r}</b> | <i>{weekdays[datetime.datetime.weekday(date_input)]}</i> | <i><b>{schedule_json[0]['NAME_GROUP']}</b></i>"
         "<b>\n**********************************\n"
         "</b>---------------------------------------------\n" + output)
 
