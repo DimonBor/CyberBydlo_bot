@@ -1,9 +1,9 @@
 import json
 
+
 # Operations with users
 
 def loadUsers():
-
     try:
         with open('users', 'r') as users:
             usersList = json.load(users)
@@ -17,9 +17,8 @@ def loadUsers():
 
 
 def addUser(userID, groupName):
-
     usersList = loadUsers()
-    
+
     for user in usersList:
         if user[0] == userID: return "ERROR"
 
@@ -33,7 +32,6 @@ def addUser(userID, groupName):
 
 
 def deleteUser(userID):
-
     usersList = loadUsers()
 
     for user in usersList:
@@ -47,7 +45,6 @@ def deleteUser(userID):
 
 
 def setGroup(userID, groupName):
-
     usersList = loadUsers()
 
     for user in usersList:
@@ -64,7 +61,6 @@ def setGroup(userID, groupName):
 
 
 def loadURLs():
-
     try:
         with open('urls', 'r') as urls:
             urlsList = json.load(urls)
@@ -78,14 +74,17 @@ def loadURLs():
 
 
 def addUrl(groupCode, subjectName, action, urlToAppend):
-
     urlsList = loadURLs()
 
-    try: urlsList[groupCode]
-    except: urlsList[groupCode] = {}
+    try:
+        urlsList[groupCode]
+    except:
+        urlsList[groupCode] = {}
 
-    try: urlsList[groupCode][subjectName]
-    except: urlsList[groupCode][subjectName] = {}
+    try:
+        urlsList[groupCode][subjectName]
+    except:
+        urlsList[groupCode][subjectName] = {}
 
     urlsList[groupCode][subjectName][action] = urlToAppend
 
@@ -94,13 +93,14 @@ def addUrl(groupCode, subjectName, action, urlToAppend):
 
     return "OK"
 
-def deleteURL(groupCode, subjectName, action):
 
+def deleteURL(groupCode, subjectName, action):
     urlsList = loadURLs()
 
     try:
         urlsList[groupCode][subjectName][action] = ""
-    except: return "ERROR: NOT FOUND!"
+    except:
+        return "ERROR: NOT FOUND!"
 
     with open('urls', 'w') as urls:
         json.dump(urlsList, urls)

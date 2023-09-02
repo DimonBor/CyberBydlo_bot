@@ -1,15 +1,13 @@
 import requests
 import datetime
 import json
-import setup
-import urllib3
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineKeyboardButton, InlineKeyboardMarkup\
+import ssl
+from aiogram.utils.keyboard import InlineKeyboardButton, InlineKeyboardMarkup, InlineKeyboardBuilder
+from bot import setup
 
-
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
 
 groups = {
+    'КБ-01': '1002512',
     'КБ-01/1': '1002732',
     'КБ-01/2': '1002733',
     'КБ-11': '1003272'
@@ -26,14 +24,20 @@ weekdays = {
 }
 
 
+class TLSAdapter(requests.adapters.HTTPAdapter):
+
+    def init_poolmanager(self, *args, **kwargs):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.set_ciphers('DEFAULT@SECLEVEL=1')
+        kwargs['ssl_context'] = ctx
+        return super(TLSAdapter, self).init_poolmanager(*args, **kwargs)
+
+
 async def schedule_func(arg, kwarg, group_name, commands, message):
 
     urls = setup.loadURLs()
-    group_code = str()
     output = ''
-    stars = str()
-    date_r = str()
-    action = str()
 
     if arg:
         DATE = str(arg)
@@ -43,7 +47,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
             date_r = date_array[2]+"."+date_array[1]+"."+date_array[0]
         else:
             try:
-                date_input = datetime.datetime.strptime(DATE, '%d\.%m\.%Y')
+                date_input = datetime.datetime.strptime(DATE, '%d.%m.%Y')
                 date_array = list(map(str, (str(date_input.date())).split("-")))
                 date_r = date_array[2]+"."+date_array[1]+"."+date_array[0]
 
@@ -68,20 +72,23 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
         return 0
 
     Data = {
+        "method": "getSchedules",
         "id_grp": group_code,
         "date_beg": date_r,
         "date_end": date_r
     }
 
     try:
-        response = requests.post('https://schedule.sumdu.edu.ua/index/json', data=Data, verify=False, timeout=10)
+        session = requests.session()
+        session.mount('https://', TLSAdapter())
+        response = session.get('https://schedule.sumdu.edu.ua/index/json', params=Data, verify=False, timeout=10)
     except:
         await message.reply("Розкладу пизда, я не знаю, шо робити. 🌚")
         return 0
 
     schedule_json = json.loads(response.text)
 
-    message_keyboard = InlineKeyboardMarkup()
+    message_keyboard = InlineKeyboardBuilder()
 
     if not len(schedule_json):
         output = "Схоже, що пар немає 😇"
@@ -99,7 +106,7 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
                 else: message_keyboard.insert(temp_button)
         except: pass
 
-        temp_string = f"<i>⌚️ {i['TIME_PAIR']} (<b>{action}</b>)</i>"
+        temp_string = f"<i>⌚️ {i['NAME_PAIR']}, {i['TIME_PAIR']} (<b>{action}</b>)</i>"
 
         if i['NAME_AUD']: temp_string += f" <b>[{i['NAME_AUD']}]</b>\n"
         else: temp_string += "\n"
@@ -107,10 +114,10 @@ async def schedule_func(arg, kwarg, group_name, commands, message):
         if i['NAME_FIO']: temp_string +=  f"{i['NAME_FIO']}\n"
         if i['REASON']: temp_string += f"<i>{i['REASON']}\n</i>"
 
-        output = temp_string + "---------------------------------------------\n" + output
+        output += temp_string + "---------------------------------------------\n"
 
     output = (f"📅 <b>{date_r}</b> | <i>{weekdays[datetime.datetime.weekday(date_input)]}</i> | <i><b>{schedule_json[0]['NAME_GROUP']}</b></i>"
         "<b>\n**********************************\n"
         "</b>---------------------------------------------\n" + output)
 
-    await message.reply(output, reply_markup = message_keyboard)
+    await message.reply(output, reply_markup=message_keyboard.as_markup())
